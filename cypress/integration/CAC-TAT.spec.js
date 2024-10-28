@@ -45,11 +45,13 @@ describe('Central de Atendimento ao Cliente TAT', function() {
 
     })
 
-    it('campo telefone continua vazio quando preenchido com valor não numérico', function() {
-        cy.get('#phone')
-            .type('abcde')
-            .should('have.value', '')
+    Cypress._.times(3, function(){
+        it('campo telefone continua vazio quando preenchido com valor não numérico', function() {
+            cy.get('#phone')
+                .type('abcde')
+                .should('have.value', '')
 
+        })
     })
 
     it('campo telefone continua deve ser obrigatório ao enviar formulário', function() {
@@ -199,16 +201,51 @@ describe('Central de Atendimento ao Cliente TAT', function() {
     })
 
 
-    it('exibe mensagem por 3 segundos', function() {
-        cy.clock() // congela o relógio do navegador
-      
-        // (...) // ação que dispara algo que exibe uma mensagem por três segundos
-      
-        // (...) // verificação de que a mensagem está visível
-      
-        cy.tick(3000) // avança o relógio três segundos (em milissegundos). Avanço este tempo para não perdê-lo esperando.
-      
-        // (...) // verificação de que a mensagem não está mais visível
+    it('exibe e esconde as mensagens de sucesso e erro usando o .invoke', function() {
+        cy.get('.success')
+          .should('not.be.visible')
+          .invoke('show')
+          .should('be.visible')
+          .and('contain', 'Mensagem enviada com sucesso.')
+          .invoke('hide')
+          .should('not.be.visible')
+        cy.get('.error')
+          .should('not.be.visible')
+          .invoke('show')
+          .should('be.visible')
+          .and('contain', 'Valide os campos obrigatórios!')
+          .invoke('hide')
+          .should('not.be.visible')
+      })
+
+      it('preenche a area de texto usando o comando invoke', function() {
+        const longText = Cypress._.repeat('0123456789', 20)
+        cy.get('#open-text-area')
+            .invoke('val', longText)
+            .should('have.value', longText)
+
+      })
+
+      it('faz uma requisição HTTP', function() {
+        cy.request('https://cac-tat.s3.eu-central-1.amazonaws.com/index.html')
+            .should(function(response){
+                const { status, statusText, body} = response
+                expect(status).to.equal(200)
+                expect(statusText).to.equal('OK')
+                expect(body).to.include('CAC TAT')
+
+            }) 
+
+      })
+
+      it.only('encontra o gato escondido', function(){
+        cy.get('#cat')
+            .invoke('show')
+            .should('be.visible')
+        cy.get('#title')
+            .invoke('text', 'CAT TAT')
+        cy.get('#subtitle')
+            .invoke('text', 'Eu gosto de gatos')
       })
 
 
